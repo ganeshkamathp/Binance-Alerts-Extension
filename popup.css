@@ -1,0 +1,8 @@
+html {
+    min-width: 40em;
+    padding: 10px;
+}
+
+#logo {
+    max-width: 20em;
+}
