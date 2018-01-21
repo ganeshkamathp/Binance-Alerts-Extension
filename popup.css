@@ -6,3 +6,7 @@ html {
 #logo {
     max-width: 20em;
 }
+
+#interval {
+    width: 3em;
+}

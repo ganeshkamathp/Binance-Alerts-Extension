@@ -2,6 +2,10 @@ function show(title, message, symbol) {
     var time = /(..)(:..)/.exec(new Date());
     var hour = time[1] % 12 || 12;
     var period = time[1] < 12 ? 'a.m.' : 'p.m.';
+    if (localStorage.play_sound === 'true') {
+        var snd = new Audio("bell.wav");
+        snd.play();
+    }
     var notification = new Notification(title + ' - ' + hour + time[2] + ' ' + period, {
         icon: 'logo.png',
         body: message,
@@ -34,14 +38,14 @@ function process_alert_map() {
             var stored_price = stored_prices[j];
             if (stored_price.symbol == currency.coin) {
                 if ((currency.buy === true) && (Number(stored_price.price) < Number(currency.price))) {
-                    let new_target = Number((stored_price.price * 0.9).toFixed(8));
+                    let new_target = Number((stored_price.price * 0.98).toFixed(8));
                     show("Buy Alert", stored_price.symbol + " < " + currency.price + ". Current price is " + stored_price.price + ".\nReducing target to " + new_target, stored_price.symbol);
                     currencies[i].price = new_target;
                     localStorage.alert_map = JSON.stringify(currencies);
                     update_prices();
                 } else if ((currency.buy === false) && (Number(stored_price.price) > Number(currency.price))) {
-                    let new_target = Number((stored_price.price * 1.1).toFixed(8));
-                    show("Sell Alert", stored_price.symbol + " < " + currency.price + ". Current price is " + stored_price.price + ".\nReducing target to " + new_target, stored_price.symbol);
+                    let new_target = Number((stored_price.price * 1.02).toFixed(8));
+                    show("Sell Alert", stored_price.symbol + " > " + currency.price + ". Current price is " + stored_price.price + ".\nIncreasing target to " + new_target, stored_price.symbol);
                     currencies[i].price = new_target;
                     localStorage.alert_map = JSON.stringify(currencies);
                     update_prices();
@@ -56,9 +60,20 @@ function update_prices() {
 }
 
 get_prices();
+var time_left = localStorage.refresh_interval || 10;
+var previous_interval = localStorage.refresh_interval || 10;
 setInterval(function () {
-    if (localStorage.alert_map && localStorage.alert_map !== "[]") {
-        get_prices();
-        process_alert_map();
+    time_left -= 5;
+    if (previous_interval != (localStorage.refresh_interval || 10)) {
+        previous_interval = localStorage.refresh_interval || 10;
+        time_left = 0;
     }
-}, 10000);
+    if (time_left <= 0) {
+        time_left = localStorage.refresh_interval || 10;
+        if (localStorage.alert_map && localStorage.alert_map !== "[]") {
+            get_prices();
+            process_alert_map();
+        }
+    }
+}, 5000);
+
